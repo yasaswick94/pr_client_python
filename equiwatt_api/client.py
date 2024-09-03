@@ -8,13 +8,21 @@ from datetime import datetime
 
 
 class EquiwattSaaSClient:
-    def __init__(self, api_key, base_url=""):
-        self.base_url = base_url
-        self.api_key = api_key
-        self.headers = {
-            'Authorization': f'Bearer {self.api_key}',
-            'Content-Type': 'application/json'
-        }
+    def __init__(self, api_key: str, tenant_id: str, base_url=""):
+        if api_key and tenant_id:
+            try:
+                uuid.UUID(tenant_id)
+            except ValueError:
+                raise EquiwattAPIException("Invalid tenant ID")
+            self.base_url = base_url
+            self.api_key = api_key
+            self.headers = {
+                'tenant': tenant_id,
+                'X-API-KEY': f'{self.api_key}',
+                'Content-Type': 'application/json'
+            }
+        else:
+            raise EquiwattAPIException("API key and tenant id are required")
 
     def enable_sandbox(self):
         self.base_url = "https://sandbox.equiwatt.com"
