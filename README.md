@@ -36,7 +36,6 @@ To test your integration without affecting live data, you can enable sandbox mod
 
 ```
 client.enable_sandbox()
-
 ```
 
 
