@@ -12,7 +12,7 @@ class EquiwattAPIException(Exception):
         if self.status_code:
             return f"{clicolors.BOLD}code {self.status_code}: {clicolors.FAIL}{self.message}"
         return self.message
-    
+
     @staticmethod
     def from_response(response):
         try:
@@ -22,7 +22,6 @@ class EquiwattAPIException(Exception):
         except ValueError:
             error_message = response.text
             error_details = "No details available"
-        
         return EquiwattAPIException(
             message=error_message,
             status_code=response.status_code,

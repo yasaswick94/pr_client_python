@@ -1,9 +1,11 @@
 import uuid
 import requests
-from .schema import AssetCreatePayload
+
+from equiwatt_api.schema.paginator import PowerResponsePaginatedResponse
+from .schema.asset import AssetCreatePayload
 from .exceptions import EquiwattAPIException
 from pydantic import ValidationError
-from typing import Literal
+from typing import Dict, Literal
 from datetime import datetime
 
 
@@ -159,3 +161,25 @@ class EquiwattSaaSClient:
         if response.status_code != 201:
             raise EquiwattAPIException.from_response(response)
         return response.json()
+
+    def get_webhooks(self, page: int = 1, items_per_page: int = 10) -> PowerResponsePaginatedResponse[Dict]:
+        """
+        Get the list of webhooks
+
+        Args:
+            page (int, optional): The page number to retrieve. Defaults to 1.
+            items_per_page (int, optional): The number of items per page. Defaults to 10.
+
+        Returns:
+            Pagination[Dict]: A Pagination object containing webhooks and pagination details.
+
+        Raises:
+            EquiwattAPIException: If there is an error in retrieving the webhooks or if the API call fails.
+        """
+        url = f'{self.base_url}/api/v1/webhooks?page={page}&itemsPerPage={items_per_page}'
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+
+        data = response.json()
+        return PowerResponsePaginatedResponse[Dict](**data)
