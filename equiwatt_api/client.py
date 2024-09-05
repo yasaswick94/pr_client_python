@@ -47,7 +47,6 @@ class EquiwattSaaSClient:
             locationLongitude: str):
         """
         Create an asset in the Equiwatt SaaS platform, all fields are required
-        
         Args:
             userId (str): The user ID associated with the asset.
             assetId (str): The unique identifier for the asset.
@@ -183,3 +182,34 @@ class EquiwattSaaSClient:
 
         data = response.json()
         return PowerResponsePaginatedResponse[Dict](**data)
+
+    def create_webhook_subcription(self, name: str, url: str, eventTypes: list[str]):
+        """
+        Get the list of allowed event schemes.
+
+        Returns:
+            Dict: The response from the API as a dictionary.
+        """
+        payload = {
+            "name": name,
+            "url": url,
+            "eventTypes": eventTypes
+        }
+        url = f'{self.base_url}/api/v1/webhooks/subscribe'
+        response = requests.post(url, headers=self.headers, json=payload)
+        if response.status_code != 201:
+            raise EquiwattAPIException.from_response(response)
+        return response.json()
+
+    def delete_webhook_subcription(self, webhook_uuid: str):
+        """
+        Delete a webhook subscription
+
+        Returns:
+            True: If the webhook is successfully deleted.
+        """
+        url = f'{self.base_url}/api/v1/webhooks/{webhook_uuid}/unsubscribe'
+        response = requests.delete(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+        return True
