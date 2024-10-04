@@ -1,10 +1,9 @@
-from typing import Generic, List, TypeVar
-from pydantic import BaseModel
+from typing import Generic, List, Type, TypeVar
 
 T = TypeVar('T')
 
 
-class PaginationMetadata(BaseModel):
+class PaginationMetadata():
     totalItems: int
     itemCount: int
     itemsPerPage: int
@@ -12,8 +11,16 @@ class PaginationMetadata(BaseModel):
     currentPage: int
     hasMore: bool
 
+    def __init__(self, data):
+        self.totalItems = data.get('totalItems')
+        self.itemCount = data.get('itemCount')
+        self.itemsPerPage = data.get('itemsPerPage')
+        self.totalPages = data.get('totalPages')
+        self.currentPage = data.get('currentPage')
+        self.hasMore = data.get('hasMore')
 
-class PowerResponsePaginatedResponse(BaseModel, Generic[T]):
+
+class PowerResponsePaginatedResponse(Generic[T]):
     """
     PowerResponsePaginatedResponse represents a paginated response from equiwatt PowerResponse that contains
     a list of items and pagination metadata.
@@ -27,5 +34,9 @@ class PowerResponsePaginatedResponse(BaseModel, Generic[T]):
     items: List[T]
     pagination: PaginationMetadata
 
-    class Config:
-        arbitrary_types_allowed = True
+    def generic_class_type(self) -> Type[T]:
+        return self.__class__.__orig_bases__[0].__args__[0]
+
+    def __init__(self, item_class: Type[T], items: List[T], pagination: PaginationMetadata):
+        self.items = [item_class(item) for item in items]
+        self.pagination = PaginationMetadata(pagination)

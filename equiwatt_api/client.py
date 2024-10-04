@@ -1,8 +1,9 @@
 import uuid
 import requests
-
+from typing import Iterator, List
+from equiwatt_api.response import AssetDetails, EventAssetBaseline, EventAssetState, EventDetails
 from equiwatt_api.schema.paginator import PowerResponsePaginatedResponse
-from .schema.asset import AssetCreatePayload
+from .schema.asset import AssetCreatePayload, EventAssetOptPayload, EventAssetOptPayloadStatus
 from .exceptions import EquiwattAPIException
 from pydantic import ValidationError
 from typing import Dict, Literal
@@ -18,11 +19,7 @@ class EquiwattSaaSClient:
                 raise EquiwattAPIException("Invalid tenant ID")
             self.base_url = base_url
             self.api_key = api_key
-            self.headers = {
-                'tenant': tenant_id,
-                'X-API-KEY': f'{self.api_key}',
-                'Content-Type': 'application/json'
-            }
+            self.headers = {"tenant": tenant_id, "X-API-KEY": f"{self.api_key}", "Content-Type": "application/json"}
         else:
             raise EquiwattAPIException("API key and tenant id are required")
 
@@ -33,18 +30,19 @@ class EquiwattSaaSClient:
         self.base_url = "http://localhost:3000"
 
     def create_asset(
-            self,
-            userId: str,
-            assetId: str,
-            eventSchemeUUID: uuid.uuid4,
-            name: str,
-            assetType: Literal['SMARTMETER'],
-            installationDate: datetime,
-            locationPostcode: str,
-            locationBuildingNoOrName: str,
-            locationAddress: str,
-            locationLatitude: str,
-            locationLongitude: str):
+        self,
+        userId: str,
+        assetId: str,
+        eventSchemeUUID: uuid.uuid4,
+        name: str,
+        assetType: Literal["SMARTMETER"],
+        installationDate: datetime,
+        locationPostcode: str,
+        locationBuildingNoOrName: str,
+        locationAddress: str,
+        locationLatitude: str,
+        locationLongitude: str,
+    ):
         """
         Create an asset in the Equiwatt SaaS platform, all fields are required
         Args:
@@ -78,12 +76,12 @@ class EquiwattSaaSClient:
                 locationBuildingNoOrName=locationBuildingNoOrName,
                 locationAddress=locationAddress,
                 locationLatitude=locationLatitude,
-                locationLongitude=locationLongitude
+                locationLongitude=locationLongitude,
             )
         except ValidationError as e:
             raise EquiwattAPIException(f"Invalid payload data: {e.json()}")
 
-        url = f'{self.base_url}/api/v1/assets'
+        url = f"{self.base_url}/api/v1/assets"
         response = requests.post(url, json=payload.model_dump(), headers=self.headers)
         if response.status_code != 201:
             raise EquiwattAPIException.from_response(response)
@@ -102,7 +100,7 @@ class EquiwattSaaSClient:
         Raises:
             EquiwattAPIException: If there is an error in creating the assets or if the API call fails.
         """
-        url = f'{self.base_url}/api/v1/assets/bulk'
+        url = f"{self.base_url}/api/v1/assets/bulk"
         validated_assets = []
         for asset in assets:
             try:
@@ -115,6 +113,42 @@ class EquiwattSaaSClient:
             raise EquiwattAPIException.from_response(response)
         return response.json()
 
+    def _get_paginated_assets(
+        self, page: int = 1, items_per_page: int = 100
+    ) -> PowerResponsePaginatedResponse[AssetDetails]:
+        """
+        Get assets registered in powerResponse platform.
+
+        Args:
+            assetUUID (str): The UUID of the asset to archive, this is different from the assetId.
+
+        Returns:
+            True: If the asset is successfully archived.
+        """
+
+        url = f"{self.base_url}/api/v1/assets?page={page}&pageSize={items_per_page}"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+
+        data = response.json()
+        return PowerResponsePaginatedResponse[AssetDetails](AssetDetails, **data)
+
+    def get_assets(self, chunk_size: int = 100) -> Iterator[List[AssetDetails]]:
+        """
+        This is a generator function that yields a list of assets registered in the powerResponse platform.
+
+        Args:
+            chunk_size (int, optional): The number of items per chunk. Defaults to 100.
+        """
+        page = 1
+        while True:
+            paginated_response = self._get_paginated_assets(page=page, items_per_page=chunk_size)
+            yield paginated_response.items
+            if paginated_response.pagination.currentPage >= paginated_response.pagination.totalPages:
+                break
+            page += 1
+
     def archive_asset(self, assetUUID: str):
         """
         Archive an asset in the Equiwatt SaaS platform.
@@ -126,7 +160,7 @@ class EquiwattSaaSClient:
             True: If the asset is successfully archived.
         """
 
-        url = f'{self.base_url}/api/v1/assets/{assetUUID}'
+        url = f"{self.base_url}/api/v1/assets/{assetUUID}"
         response = requests.delete(url, headers=self.headers)
         if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
@@ -139,7 +173,7 @@ class EquiwattSaaSClient:
         Returns:
             Dict: The response from the API as a dictionary.
         """
-        url = f'{self.base_url}/api/v1/event-schemes'
+        url = f"{self.base_url}/api/v1/event-schemes"
         response = requests.get(url, headers=self.headers)
         if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
@@ -152,10 +186,8 @@ class EquiwattSaaSClient:
         Returns:
             Dict: The response from the API as a dictionary.
         """
-        url = f'{self.base_url}/api/v1/users'
-        payload = {
-            "userId": user_id
-        }
+        url = f"{self.base_url}/api/v1/users"
+        payload = {"userId": user_id}
         response = requests.post(url, headers=self.headers, json=payload)
         if response.status_code != 201:
             raise EquiwattAPIException.from_response(response)
@@ -175,7 +207,7 @@ class EquiwattSaaSClient:
         Raises:
             EquiwattAPIException: If there is an error in retrieving the webhooks or if the API call fails.
         """
-        url = f'{self.base_url}/api/v1/webhooks?page={page}&itemsPerPage={items_per_page}'
+        url = f"{self.base_url}/api/v1/webhooks?page={page}&pageSize={items_per_page}"
         response = requests.get(url, headers=self.headers)
         if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
@@ -183,19 +215,15 @@ class EquiwattSaaSClient:
         data = response.json()
         return PowerResponsePaginatedResponse[Dict](**data)
 
-    def create_webhook_subcription(self, name: str, url: str, eventTypes: list[str]):
+    def create_webhook_subcription(self, name: str, url: str, eventTypes: List[str]):
         """
         Get the list of allowed event schemes.
 
         Returns:
             Dict: The response from the API as a dictionary.
         """
-        payload = {
-            "name": name,
-            "url": url,
-            "eventTypes": eventTypes
-        }
-        url = f'{self.base_url}/api/v1/webhooks/subscribe'
+        payload = {"name": name, "url": url, "eventTypes": eventTypes}
+        url = f"{self.base_url}/api/v1/webhooks/subscribe"
         response = requests.post(url, headers=self.headers, json=payload)
         if response.status_code != 201:
             raise EquiwattAPIException.from_response(response)
@@ -208,8 +236,108 @@ class EquiwattSaaSClient:
         Returns:
             True: If the webhook is successfully deleted.
         """
-        url = f'{self.base_url}/api/v1/webhooks/{webhook_uuid}/unsubscribe'
+        url = f"{self.base_url}/api/v1/webhooks/{webhook_uuid}/unsubscribe"
         response = requests.delete(url, headers=self.headers)
         if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
         return True
+
+    def get_event_details(self, event_uuid: str) -> EventDetails:
+        """
+        Get event details
+
+        Returns:
+            True: If the webhook is successfully deleted.
+        """
+        url = f"{self.base_url}/api/v1/events/{event_uuid}"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+        return EventDetails(response.json())
+
+    def _get_paginated_event_assets(
+        self, event_uuid: str, page: int = 1, items_per_page: int = 100
+    ) -> PowerResponsePaginatedResponse[EventAssetState]:
+        """
+        Get event details
+
+        Returns:
+            True: If the webhook is successfully deleted.
+        """
+        url = f"{self.base_url}/api/v1/events/{event_uuid}/assets?page={page}&pageSize={items_per_page}"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+        data = response.json()
+        return PowerResponsePaginatedResponse[EventAssetState](EventAssetState, **data)
+
+    def get_event_assets(self, event_uuid: str, chunk_size: int = 100) -> Iterator[List[EventAssetState]]:
+        """
+        This is a generator function that yields a list of assets registered in the powerResponse platform.
+
+        Args:
+            chunk_size (int, optional): The number of items per chunk. Defaults to 100.
+        """
+        page = 1
+        while True:
+            paginated_response = self._get_paginated_event_assets(
+                event_uuid=event_uuid, page=page, items_per_page=chunk_size
+            )
+            yield paginated_response.items
+            if paginated_response.pagination.currentPage >= paginated_response.pagination.totalPages:
+                break
+            page += 1
+
+    def _get_paginated_event_asset_baselines(
+        self, event_uuid: str, page: int = 1, items_per_page: int = 100
+    ) -> PowerResponsePaginatedResponse[EventAssetBaseline]:
+        """
+        Get event details
+
+        Returns:
+            True: If the webhook is successfully deleted.
+        """
+        url = f"{self.base_url}/api/v1/events/{event_uuid}/baselines?page={page}&pageSize={items_per_page}"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+        data = response.json()
+        return PowerResponsePaginatedResponse[EventAssetBaseline](EventAssetBaseline, **data)
+
+    def get_event_asset_baselines(self, event_uuid: str, chunk_size: int = 100) -> Iterator[List[EventAssetBaseline]]:
+        """
+        This is a generator function that yields a list of assets registered in the powerResponse platform.
+
+        Args:
+            chunk_size (int, optional): The number of items per chunk. Defaults to 100.
+        """
+        page = 1
+        while True:
+            paginated_response = self._get_paginated_event_asset_baselines(
+                event_uuid=event_uuid, page=page, items_per_page=chunk_size
+            )
+            yield paginated_response.items
+            if paginated_response.pagination.currentPage >= paginated_response.pagination.totalPages:
+                break
+            page += 1
+
+    def event_asset_opt_in(self, event_uuid: str, asset_uuids: List[str], status: str):
+        """
+        Opt in or out of an event
+        """
+        try:
+            payloadStatus = EventAssetOptPayloadStatus(
+                assetUUIDs=asset_uuids,
+                status=status
+            )
+            payload = EventAssetOptPayload(statuses=[payloadStatus])
+        except ValidationError as e:
+            raise EquiwattAPIException(f"Invalid payload data: {e.json()}")
+
+        print(payload.model_dump())
+
+        url = f"{self.base_url}/api/v1/events/{event_uuid}/asset-optin"
+        response = requests.post(url, json=payload.model_dump(), headers=self.headers)
+        if response.status_code != 201:
+            raise EquiwattAPIException.from_response(response)
+        return response.json()
