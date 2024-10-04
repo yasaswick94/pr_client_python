@@ -1,4 +1,6 @@
 import uuid
+import hmac
+import hashlib
 import requests
 from typing import Iterator, List
 from equiwatt_api.response import AssetDetails, EventAssetBaseline, EventAssetState, EventDetails
@@ -341,3 +343,13 @@ class EquiwattSaaSClient:
         if response.status_code != 201:
             raise EquiwattAPIException.from_response(response)
         return response.json()
+
+    def hash_challenge(amt: str, challenge: str) -> str:
+        h = hmac.new(amt.encode(), challenge.encode(), hashlib.sha256)
+        return h.hexdigest()
+
+    def verify_payload(self, token: str, signature: str, body: str) -> bool:
+        """
+        Verify webhook signature
+        """
+        return self.hash_challenge(token, body) == signature
