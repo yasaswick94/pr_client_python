@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='equiwatt_api_package',
-    version='0.1',
+    name='powerresponse_client',
+    version='0.2',
     description='A Python client for interacting with the equiwatt API',
     author='Yasas Wickramarathne',
     author_email='yasas@equiwatt.com',
