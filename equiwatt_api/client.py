@@ -28,8 +28,8 @@ class EquiwattSaaSClient:
     def enable_sandbox(self):
         self.base_url = "https://sandbox.equiwatt.com"
 
-    def set_to_local(self):
-        self.base_url = "http://localhost:3000"
+    def set_service_url(self, url):
+        self.base_url = url
 
     def create_asset(
         self,
@@ -344,7 +344,7 @@ class EquiwattSaaSClient:
             raise EquiwattAPIException.from_response(response)
         return response.json()
 
-    def hash_challenge(amt: str, challenge: str) -> str:
+    def hash_challenge(self, amt: str, challenge: str) -> str:
         h = hmac.new(amt.encode(), challenge.encode(), hashlib.sha256)
         return h.hexdigest()
 
