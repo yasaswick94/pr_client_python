@@ -12,8 +12,8 @@ class AssetCreatePayload(BaseModel):
     locationPostcode: str
     locationBuildingNoOrName: str
     locationAddress: str
-    locationLatitude: str
-    locationLongitude: str
+    locationLatitude: Optional[str] = None
+    locationLongitude: Optional[str] = None
 
     class Config:
         extra = 'forbid'
