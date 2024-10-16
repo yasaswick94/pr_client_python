@@ -1,14 +1,14 @@
-from typing import List, Literal
+from typing import List, Literal, Optional
 from pydantic import BaseModel
 
 
 class AssetCreatePayload(BaseModel):
     userId: str
     assetId: str
-    eventSchemeUUID: str
+    eventSchemeUUID: Optional[str] = None
     name: str
     assetType: Literal['SMARTMETER']
-    installationDate: str
+    installationDate: Optional[str] = None
     locationPostcode: str
     locationBuildingNoOrName: str
     locationAddress: str
@@ -32,5 +32,3 @@ class EventAssetOptPayload(BaseModel):
 
     class Config:
         extra = 'forbid'
-
-

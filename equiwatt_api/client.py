@@ -35,15 +35,15 @@ class EquiwattSaaSClient:
         self,
         userId: str,
         assetId: str,
-        eventSchemeUUID: uuid.uuid4,
         name: str,
         assetType: Literal["SMARTMETER"],
-        installationDate: datetime,
         locationPostcode: str,
         locationBuildingNoOrName: str,
         locationAddress: str,
         locationLatitude: str,
         locationLongitude: str,
+        installationDate: datetime = None,
+        eventSchemeUUID: uuid.uuid4 = None,
     ):
         """
         Create an asset in the Equiwatt SaaS platform, all fields are required
