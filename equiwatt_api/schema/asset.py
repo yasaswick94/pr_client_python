@@ -32,3 +32,12 @@ class EventAssetOptPayload(BaseModel):
 
     class Config:
         extra = 'forbid'
+
+
+class EnergyConsumptionDataPoint(BaseModel):
+    assetUUID: str
+    timestamp: int
+    value: float
+
+    class Config:
+        extra = 'forbid'

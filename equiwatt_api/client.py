@@ -5,7 +5,12 @@ import requests
 from typing import Iterator, List
 from equiwatt_api.response import AssetDetails, EventAssetBaseline, EventAssetState, EventDetails
 from equiwatt_api.schema.paginator import PowerResponsePaginatedResponse
-from .schema.asset import AssetCreatePayload, EventAssetOptPayload, EventAssetOptPayloadStatus
+from .schema.asset import (
+    AssetCreatePayload,
+    EnergyConsumptionDataPoint,
+    EventAssetOptPayload,
+    EventAssetOptPayloadStatus,
+)
 from .exceptions import EquiwattAPIException
 from pydantic import ValidationError
 from typing import Dict, Literal
@@ -328,21 +333,51 @@ class EquiwattSaaSClient:
         Opt in or out of an event
         """
         try:
-            payloadStatus = EventAssetOptPayloadStatus(
-                assetUUIDs=asset_uuids,
-                status=status
-            )
+            payloadStatus = EventAssetOptPayloadStatus(assetUUIDs=asset_uuids, status=status)
             payload = EventAssetOptPayload(statuses=[payloadStatus])
         except ValidationError as e:
             raise EquiwattAPIException(f"Invalid payload data: {e.json()}")
-
-        print(payload.model_dump())
 
         url = f"{self.base_url}/api/v1/events/{event_uuid}/asset-optin"
         response = requests.post(url, json=payload.model_dump(), headers=self.headers)
         if response.status_code != 201:
             raise EquiwattAPIException.from_response(response)
         return response.json()
+
+    def scheme_asset_opt_in(self, scheme_uuid: str, asset_uuids: List[str], status: str):
+        """
+        Opt in or out a list of assets to/from a scheme
+        """
+        try:
+            payloadStatus = EventAssetOptPayloadStatus(assetUUIDs=asset_uuids, status=status)
+            payload = EventAssetOptPayload(statuses=[payloadStatus])
+        except ValidationError as e:
+            raise EquiwattAPIException(f"Invalid payload data: {e.json()}")
+
+        url = f"{self.base_url}/api/v1/event-schemes/{scheme_uuid}/assets-optin"
+        response = requests.post(url, json=payload.model_dump(), headers=self.headers)
+        if response.status_code != 201:
+            raise EquiwattAPIException.from_response(response)
+        return response.json()
+
+    # Energy data
+
+    def send_energy_readings(self, readings: List[EnergyConsumptionDataPoint]):
+        """
+        Send energy readings to the Equiwatt powerResponse platform
+        """
+        try:
+            payload = [reading.model_dump() for reading in readings]
+        except ValidationError as e:
+            raise EquiwattAPIException(f"Invalid payload data: {e.json()}")
+
+        url = f"{self.base_url}/api/v1/energy-consumption"
+        response = requests.post(url, json=payload, headers=self.headers)
+        if response.status_code != 201:
+            raise EquiwattAPIException.from_response(response)
+        return response.json()
+
+    # Webhook signature verification
 
     def hash_challenge(self, amt: str, challenge: str) -> str:
         h = hmac.new(amt.encode(), challenge.encode(), hashlib.sha256)
