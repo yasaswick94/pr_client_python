@@ -10,6 +10,7 @@ from .schema.asset import (
     EnergyConsumptionDataPoint,
     EventAssetOptPayload,
     EventAssetOptPayloadStatus,
+    EventAssetOptOutPayload
 )
 from .exceptions import EquiwattAPIException
 from pydantic import ValidationError
@@ -26,7 +27,7 @@ class EquiwattSaaSClient:
                 raise EquiwattAPIException("Invalid tenant ID")
             self.base_url = base_url
             self.api_key = api_key
-            self.headers = {"tenant": tenant_id, "X-API-KEY": f"{self.api_key}", "Content-Type": "application/json"}
+            self.headers = {"tenant": tenant_id, "x-api-key": f"{self.api_key}", "Content-Type": "application/json"}
         else:
             raise EquiwattAPIException("API key and tenant id are required")
 
@@ -347,6 +348,7 @@ class EquiwattSaaSClient:
     def scheme_asset_opt_in(self, scheme_uuid: str, asset_uuids: List[str], status: str):
         """
         Opt in or out a list of assets to/from a scheme
+        states = ["OPT_IN", "OPT_OUT"]
         """
         try:
             payloadStatus = EventAssetOptPayloadStatus(assetUUIDs=asset_uuids, status=status)
@@ -355,6 +357,21 @@ class EquiwattSaaSClient:
             raise EquiwattAPIException(f"Invalid payload data: {e.json()}")
 
         url = f"{self.base_url}/api/v1/event-schemes/{scheme_uuid}/assets-optin"
+        response = requests.post(url, json=payload.model_dump(), headers=self.headers)
+        if response.status_code != 201:
+            raise EquiwattAPIException.from_response(response)
+        return response.json()
+
+    def scheme_asset_opt_out(self, asset_uuids: List[str]):
+        """
+        Opt out asset from all schemes
+        """
+        try:
+            payload = EventAssetOptOutPayload(assetUUIDs=asset_uuids)
+        except ValidationError as e:
+            raise EquiwattAPIException(f"Invalid payload data: {e.json()}")
+
+        url = f"{self.base_url}/api/v1/event-schemes/assets/opt-out"
         response = requests.post(url, json=payload.model_dump(), headers=self.headers)
         if response.status_code != 201:
             raise EquiwattAPIException.from_response(response)

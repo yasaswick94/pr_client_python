@@ -7,7 +7,7 @@ class AssetCreatePayload(BaseModel):
     assetId: str
     eventSchemeUUID: Optional[str] = None
     name: str
-    assetType: Literal['SMARTMETER']
+    assetType: Literal["SMARTMETER"]
     installationDate: Optional[str] = None
     locationPostcode: str
     locationBuildingNoOrName: str
@@ -16,7 +16,7 @@ class AssetCreatePayload(BaseModel):
     locationLongitude: Optional[str] = None
 
     class Config:
-        extra = 'forbid'
+        extra = "forbid"
 
 
 class EventAssetOptPayloadStatus(BaseModel):
@@ -24,14 +24,14 @@ class EventAssetOptPayloadStatus(BaseModel):
     status: str
 
     class Config:
-        extra = 'forbid'
+        extra = "forbid"
 
 
 class EventAssetOptPayload(BaseModel):
     statuses: List[EventAssetOptPayloadStatus]
 
     class Config:
-        extra = 'forbid'
+        extra = "forbid"
 
 
 class EnergyConsumptionDataPoint(BaseModel):
@@ -40,4 +40,11 @@ class EnergyConsumptionDataPoint(BaseModel):
     value: float
 
     class Config:
-        extra = 'forbid'
+        extra = "forbid"
+
+
+class EventAssetOptOutPayload(BaseModel):
+    assetUUIDs: List[str]
+
+    class Config:
+        extra = "forbid"
