@@ -19,7 +19,7 @@ from datetime import datetime
 
 
 class EquiwattSaaSClient:
-    def __init__(self, api_key: str, tenant_id: str, base_url=""):
+    def __init__(self, api_key: str, tenant_id: str, base_url="", version: str=None):
         if api_key and tenant_id:
             try:
                 uuid.UUID(tenant_id)
@@ -28,6 +28,8 @@ class EquiwattSaaSClient:
             self.base_url = base_url
             self.api_key = api_key
             self.headers = {"tenant": tenant_id, "x-api-key": f"{self.api_key}", "Content-Type": "application/json"}
+            if version:
+                self.headers["x-api-version"] = version
         else:
             raise EquiwattAPIException("API key and tenant id are required")
 
