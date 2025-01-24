@@ -19,7 +19,7 @@ from datetime import datetime
 
 
 class EquiwattSaaSClient:
-    def __init__(self, api_key: str, tenant_id: str, base_url=""):
+    def __init__(self, api_key: str, tenant_id: str, base_url="", version: str=None):
         if api_key and tenant_id:
             try:
                 uuid.UUID(tenant_id)
@@ -28,6 +28,8 @@ class EquiwattSaaSClient:
             self.base_url = base_url
             self.api_key = api_key
             self.headers = {"tenant": tenant_id, "x-api-key": f"{self.api_key}", "Content-Type": "application/json"}
+            if version:
+                self.headers["x-api-version"] = version
         else:
             raise EquiwattAPIException("API key and tenant id are required")
 
@@ -405,3 +407,27 @@ class EquiwattSaaSClient:
         Verify webhook signature
         """
         return self.hash_challenge(token, body) == signature
+
+    def connect_asset_tariffs(self, asset_uuid: str) -> str:
+        """
+        Return tariff connect URL for asset.
+        """
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff/connect"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+
+        data = response.json()
+        return data
+
+    def get_asset_tariffs(self, asset_uuid: str, page: int = 1, page_size: int = 10):
+        """
+        Return asset tariffs
+        """
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff?page={page}&pageSize={page_size}"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+
+        data = response.json()
+        return data
