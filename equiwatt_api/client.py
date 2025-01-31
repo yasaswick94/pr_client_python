@@ -19,7 +19,7 @@ from datetime import datetime
 
 
 class EquiwattSaaSClient:
-    def __init__(self, api_key: str, tenant_id: str, base_url="", version: str=None):
+    def __init__(self, api_key: str, tenant_id: str, base_url="", version: str = "1.0"):
         if api_key and tenant_id:
             try:
                 uuid.UUID(tenant_id)
