@@ -431,3 +431,15 @@ class EquiwattSaaSClient:
 
         data = response.json()
         return data
+
+    def disconnect_asset_tariffs(self, asset_uuid: str) -> str:
+        """
+        Disconnect asset tariff.
+        """
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff"
+        response = requests.delete(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+
+        data = response.json()
+        return data
