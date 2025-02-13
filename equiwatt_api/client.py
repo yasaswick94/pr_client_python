@@ -420,11 +420,11 @@ class EquiwattSaaSClient:
         data = response.json()
         return data
 
-    def get_asset_tariffs(self, asset_uuid: str, page: int = 1, page_size: int = 10):
+    def get_asset_tariffs(self, asset_uuid: str, page: int = 1, page_size: int = 10, direction: string = 'import'):
         """
         Return asset tariffs
         """
-        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff?page={page}&pageSize={page_size}"
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff/${direction}?page={page}&pageSize={page_size}"
         response = requests.get(url, headers=self.headers)
         if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
@@ -438,6 +438,18 @@ class EquiwattSaaSClient:
         """
         url = f"{self.base_url}/api/assets/{asset_uuid}/tariff"
         response = requests.delete(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+
+        data = response.json()
+        return data
+
+    def get_asset_tariff_plans(self, asset_uuid: str):
+        """
+        Return asset tariff plans
+        """
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff-plans"
+        response = requests.get(url, headers=self.headers)
         if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
 
