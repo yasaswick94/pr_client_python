@@ -420,7 +420,7 @@ class EquiwattSaaSClient:
         data = response.json()
         return data
 
-    def get_asset_tariffs(self, asset_uuid: str, page: int = 1, page_size: int = 10, direction: string = 'import'):
+    def get_asset_tariffs(self, asset_uuid: str, page: int = 1, page_size: int = 10, direction: str = 'import'):
         """
         Return asset tariffs
         """
