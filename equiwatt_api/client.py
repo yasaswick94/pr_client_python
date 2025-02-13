@@ -424,7 +424,7 @@ class EquiwattSaaSClient:
         """
         Return asset tariffs
         """
-        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff/${direction}?page={page}&pageSize={page_size}"
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff/{direction}?page={page}&pageSize={page_size}"
         response = requests.get(url, headers=self.headers)
         if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
