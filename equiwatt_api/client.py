@@ -408,11 +408,11 @@ class EquiwattSaaSClient:
         """
         return self.hash_challenge(token, body) == signature
 
-    def connect_asset_tariffs(self, asset_uuid: str) -> str:
+    def connect_asset_tariffs(self, asset_uuid: str, direction: str="import") -> str:
         """
         Return tariff connect URL for asset.
         """
-        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff/connect"
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff/connect/{direction}"
         response = requests.get(url, headers=self.headers)
         if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
@@ -432,11 +432,11 @@ class EquiwattSaaSClient:
         data = response.json()
         return data
 
-    def disconnect_asset_tariffs(self, asset_uuid: str) -> str:
+    def disconnect_asset_tariffs(self, asset_uuid: str, direction: str = "import") -> str:
         """
         Disconnect asset tariff.
         """
-        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff"
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff/{direction}"
         response = requests.delete(url, headers=self.headers)
         if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
