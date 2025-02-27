@@ -408,11 +408,11 @@ class EquiwattSaaSClient:
         """
         return self.hash_challenge(token, body) == signature
 
-    def connect_asset_tariffs(self, asset_uuid: str) -> str:
+    def connect_asset_tariffs(self, asset_uuid: str, direction: str="import") -> str:
         """
         Return tariff connect URL for asset.
         """
-        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff/connect"
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff/connect/{direction}"
         response = requests.get(url, headers=self.headers)
         if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
@@ -420,11 +420,77 @@ class EquiwattSaaSClient:
         data = response.json()
         return data
 
-    def get_asset_tariffs(self, asset_uuid: str, page: int = 1, page_size: int = 10):
+    def get_asset_tariffs(self, asset_uuid: str, page: int = 1, page_size: int = 10, direction: str = 'import'):
         """
         Return asset tariffs
         """
-        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff?page={page}&pageSize={page_size}"
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff/{direction}?page={page}&pageSize={page_size}"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+
+        data = response.json()
+        return data
+
+    def disconnect_asset_tariffs(self, asset_uuid: str, direction: str = "import") -> str:
+        """
+        Disconnect asset tariff.
+        """
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff/{direction}"
+        response = requests.delete(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+
+        data = response.json()
+        return data
+
+    def get_asset_tariff_plans(self, asset_uuid: str):
+        """
+        Return asset tariff plans
+        """
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff-plans"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+
+        data = response.json()
+        return data
+
+    def enable_asset_tariff_schedules(self, asset_uuid: str, tariff_type: str):
+        """
+        Enable asset tariff schedules
+        """
+        if not tariff_type in ['import', 'export', 'supply']:
+            raise EquiwattAPIException(f"Invalid tariff schedule type: {tariff_type}")
+
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff/schedules/{tariff_type}"
+        response = requests.post(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+
+        data = response.json()
+        return data
+
+    def refresh_asset_tariff_schedules(self, asset_uuid: str, tariff_type: str):
+        """
+        Enable asset tariff schedules
+        """
+        if not tariff_type in ['import', 'export', 'supply']:
+            raise EquiwattAPIException(f"Invalid tariff schedule type: {tariff_type}")
+
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff/schedules/{tariff_type}/refresh"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+
+        data = response.json()
+        return data
+
+    def get_asset_tariff_schedules(self, asset_uuid: str, tariff_type, page: int = 1, page_size: int = 10):
+        """
+        Return asset tariff schedules
+        """
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff/schedules/{tariff_type}?page={page}&pageSize={page_size}"
         response = requests.get(url, headers=self.headers)
         if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
