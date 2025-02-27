@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='powerresponse_client',
-    version='0.10',
+    version='0.11',
     description='A Python client for interacting with the equiwatt API',
     author='Yasas Wickramarathne',
     author_email='yasas@equiwatt.com',
