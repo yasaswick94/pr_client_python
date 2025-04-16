@@ -420,6 +420,23 @@ class EquiwattSaaSClient:
         data = response.json()
         return data
 
+    def connect_asset_tariffs_with_callback(self, asset_uuid: str, callback_url: str, callback_state:str, direction: str="import") -> str:
+        """
+        Return tariff connect URL for asset.
+        """
+        url = f"{self.base_url}/api/assets/{asset_uuid}/tariff-connect"
+        data = {
+            "direction": direction,
+            "callbackURL": callback_url,
+            "state": callback_state, 
+        }
+        response = requests.post(url, headers=self.headers, json=data)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+
+        data = response.json()
+        return data
+
     def get_asset_tariffs(self, asset_uuid: str, page: int = 1, page_size: int = 10, direction: str = 'import'):
         """
         Return asset tariffs
