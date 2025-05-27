@@ -363,8 +363,18 @@ class EquiwattSaaSClient:
         self, scheme_uuid: str, status: str, page: int = 1, items_per_page: int = 100
     ) -> PowerResponsePaginatedResponse[EventAssetState]:
         """
-        Get scheme assets
-        status = ['OPT_IN', 'OPT_OUT', 'DUPLICATED', 'REJECTED', 'READY']
+        Get scheme assets for a specific scheme and status.
+
+        Args:
+            scheme_uuid (str): The unique identifier of the scheme.
+            status (str): The status of the assets to filter by. Possible values are 
+                ['OPT_IN', 'OPT_OUT', 'DUPLICATED', 'REJECTED', 'READY'].
+            page (int, optional): The page number to retrieve. Defaults to 1.
+            items_per_page (int, optional): The number of items per page. Defaults to 100.
+
+        Returns:
+            PowerResponsePaginatedResponse[EventAssetState]: A paginated response containing 
+                the assets matching the specified scheme and status.
         """
         url = f"{self.base_url}/api/v1/event-schemes/{scheme_uuid}/assets?page={page}&pageSize={items_per_page}"
         if status:
