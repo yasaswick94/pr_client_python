@@ -271,8 +271,6 @@ class EquiwattSaaSClient:
         """
         Get event details
 
-        Returns:
-            True: If the webhook is successfully deleted.
         """
         url = f"{self.base_url}/api/v1/events/{event_uuid}/assets?page={page}&pageSize={items_per_page}"
         response = requests.get(url, headers=self.headers)
@@ -302,10 +300,7 @@ class EquiwattSaaSClient:
         self, event_uuid: str, page: int = 1, items_per_page: int = 100
     ) -> PowerResponsePaginatedResponse[EventAssetBaseline]:
         """
-        Get event details
-
-        Returns:
-            True: If the webhook is successfully deleted.
+        Get event asset baselines
         """
         url = f"{self.base_url}/api/v1/events/{event_uuid}/baselines?page={page}&pageSize={items_per_page}"
         response = requests.get(url, headers=self.headers)
@@ -364,20 +359,40 @@ class EquiwattSaaSClient:
             raise EquiwattAPIException.from_response(response)
         return response.json()
 
-    def scheme_asset_opt_out(self, asset_uuids: List[str]):
+    def _get_paginated_scheme_assets(
+        self, scheme_uuid: str, status: str, page: int = 1, items_per_page: int = 100
+    ) -> PowerResponsePaginatedResponse[EventAssetState]:
         """
-        Opt out asset from all schemes
+        Get scheme assets
+        status = ['OPT_IN', 'OPT_OUT', 'DUPLICATED', 'REJECTED', 'READY']
         """
-        try:
-            payload = EventAssetOptOutPayload(assetUUIDs=asset_uuids)
-        except ValidationError as e:
-            raise EquiwattAPIException(f"Invalid payload data: {e.json()}")
-
-        url = f"{self.base_url}/api/v1/event-schemes/assets/opt-out"
-        response = requests.post(url, json=payload.model_dump(), headers=self.headers)
-        if response.status_code != 201:
+        url = f"{self.base_url}/api/v1/event-schemes/{scheme_uuid}/assets?page={page}&pageSize={items_per_page}"
+        if status:
+            url += f"&status={status}"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
-        return response.json()
+        data = response.json()
+        return PowerResponsePaginatedResponse[EventAssetState](EventAssetState, **data)
+
+    def scheme_assets(self, scheme_uuid: str, status: str, chunk_size: int = 100) -> Iterator[List[EventAssetState]]:
+        """
+        This is a generator function that yields a list of scheme assets
+
+        Args:
+            scheme_uuid (str): The UUID of the scheme.
+            status (str): The status of the assets to retrieve.
+            chunk_size (int, optional): The number of items per chunk. Defaults to 100.
+        """
+        page = 1
+        while True:
+            paginated_response = self._get_paginated_scheme_assets(
+                scheme_uuid=scheme_uuid, status=status, page=page, items_per_page=chunk_size
+            )
+            yield paginated_response.items
+            if paginated_response.pagination.currentPage >= paginated_response.pagination.totalPages:
+                break
+            page += 1
 
     # Energy data
 
