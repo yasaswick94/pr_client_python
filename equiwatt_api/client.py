@@ -387,12 +387,16 @@ class EquiwattSaaSClient:
 
     def scheme_assets(self, scheme_uuid: str, status: str, chunk_size: int = 100) -> Iterator[List[EventAssetState]]:
         """
-        This is a generator function that yields a list of scheme assets
+        This is a generator function that yields a list of scheme assets.
 
         Args:
             scheme_uuid (str): The UUID of the scheme.
             status (str): The status of the assets to retrieve.
             chunk_size (int, optional): The number of items per chunk. Defaults to 100.
+
+        Returns:
+            Iterator[List[EventAssetState]]: A generator that yields lists of `EventAssetState` items, 
+            one list per page of results.
         """
         page = 1
         while True:
