@@ -378,7 +378,7 @@ class EquiwattSaaSClient:
         """
         url = f"{self.base_url}/api/v1/event-schemes/{scheme_uuid}/assets?page={page}&pageSize={items_per_page}"
         if status:
-            url += f"&status={status}"
+            url += f"&state={status}"
         response = requests.get(url, headers=self.headers)
         if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
