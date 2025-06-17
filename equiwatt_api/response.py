@@ -66,7 +66,7 @@ class AssetDetails():
 
 
 class EventAssetBaseline():
-    value: float
+    value: str
     method: str
     asset: EventAsset
 
