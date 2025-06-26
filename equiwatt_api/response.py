@@ -26,6 +26,13 @@ class EventDetails():
         self.eligibility = data.get('eligibility')
 
 
+class EventAssetOnlyUUID():
+    uuid: str
+
+    def __init__(self, data: Dict):
+        self.uuid = data.get('uuid')
+
+
 class EventAsset():
     uuid: str
     assetId: str
@@ -74,3 +81,18 @@ class EventAssetBaseline():
         self.value = data.get('value')
         self.method = data.get('method')
         self.asset = EventAsset(data.get('asset'))
+
+
+class EventAssetStat():
+    asset: EventAssetOnlyUUID
+    state: str
+    energyForecasted: float
+    energyConsumed: float
+    energySaved: float
+
+    def __init__(self, data: Dict):
+        self.asset = EventAssetOnlyUUID(data.get('asset'))
+        self.state = data.get('state')
+        self.energyForecasted = data.get('energyForecasted')
+        self.energyConsumed = data.get('energyConsumed')
+        self.energySaved = data.get('energySaved')

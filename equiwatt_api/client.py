@@ -3,14 +3,13 @@ import hmac
 import hashlib
 import requests
 from typing import Iterator, List
-from equiwatt_api.response import AssetDetails, EventAssetBaseline, EventAssetState, EventDetails
+from equiwatt_api.response import AssetDetails, EventAssetBaseline, EventAssetState, EventDetails, EventAssetStat
 from equiwatt_api.schema.paginator import PowerResponsePaginatedResponse
 from .schema.asset import (
     AssetCreatePayload,
     EnergyConsumptionDataPoint,
     EventAssetOptPayload,
-    EventAssetOptPayloadStatus,
-    EventAssetOptOutPayload
+    EventAssetOptPayloadStatus
 )
 from .exceptions import EquiwattAPIException
 from pydantic import ValidationError
@@ -543,3 +542,35 @@ class EquiwattSaaSClient:
 
         data = response.json()
         return data
+
+
+    def _get_paginated_event_asset_stat(
+        self, event_uuid: str, page: int = 1, items_per_page: int = 200
+    ) -> PowerResponsePaginatedResponse[EventAssetStat]:
+        """
+        Get stats of assets for an event.
+        """
+
+        url = f"{self.base_url}/api/v1/events/{event_uuid}/assets/stats?page={page}&pageSize={items_per_page}"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+
+        data = response.json()
+        return PowerResponsePaginatedResponse[EventAssetStat](EventAssetStat, **data)
+
+
+    def get_event_asset_stats(self, event_uuid: str, chunk_size: int = 200) -> Iterator[List[EventAssetStat]]:
+        """
+        This is a generator function that yields a list of event asset stats of an event
+
+        Args:
+            chunk_size (int, optional): The number of items per chunk. Defaults to 200.
+        """
+        page = 1
+        while True:
+            paginated_response = self._get_paginated_event_asset_stat(event_uuid=event_uuid, page=page, items_per_page=chunk_size)
+            yield paginated_response.items
+            if paginated_response.pagination.currentPage >= paginated_response.pagination.totalPages:
+                break
+            page += 1
