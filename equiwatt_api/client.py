@@ -331,11 +331,13 @@ class EquiwattSaaSClient:
         """
         Get event asset baselines
         """
+        print("in paginated event assets")
         url = f"{self.base_url}/api/v1/events/{event_uuid}/assets?page={page}&pageSize={items_per_page}"
         response = requests.get(url, headers=self.headers)
         if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
         data = response.json()
+        print(data)
         return PowerResponsePaginatedResponse[EventAssetDetails](EventAssetDetails, **data)
 
     def get_event_assets(self, event_uuid: str, chunk_size: int = 100) -> Iterator[List[EventAssetDetails]]:
