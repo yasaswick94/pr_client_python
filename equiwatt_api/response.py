@@ -88,8 +88,6 @@ class EventAssetDetails():
     baselines: List[EventAssetBaselineDetails]
 
     def __init__(self, data: Dict):
-        print("in event asset details init")
-        print(data)
         self.asset = EventAsset(data.get('asset'))
         self.baselines = [EventAssetBaselineDetails(baseline) for baseline in data.get("baselines", [])]
 
