@@ -349,7 +349,7 @@ class EquiwattSaaSClient:
         """
         page = 1
         while True:
-            paginated_response = self._get_paginated_event_assets(
+            paginated_response = self._get_paginated_event_assets_with_baselines(
                 event_uuid=event_uuid, page=page, items_per_page=chunk_size
             )
             yield paginated_response.items
