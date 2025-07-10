@@ -271,7 +271,7 @@ class EquiwattSaaSClient:
         Get event details
 
         """
-        url = f"{self.base_url}/api/events/{event_uuid}/assets?page={page}&pageSize={items_per_page}"
+        url = f"{self.base_url}/api/v1/events/{event_uuid}/assets?page={page}&pageSize={items_per_page}"
         response = requests.get(url, headers=self.headers)
         if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
@@ -325,14 +325,14 @@ class EquiwattSaaSClient:
                 break
             page += 1
 
-    def _get_paginated_event_assets(
+    def _get_paginated_event_assets_with_baselines(
         self, event_uuid: str, page: int = 1, items_per_page: int = 100
     ) -> PowerResponsePaginatedResponse[EventAssetDetails]:
         """
         Get event asset baselines
         """
         print("in paginated event assets")
-        url = f"{self.base_url}/api/v1/events/{event_uuid}/assets?page={page}&pageSize={items_per_page}"
+        url = f"{self.base_url}/api/events/{event_uuid}/assets?page={page}&pageSize={items_per_page}"
         response = requests.get(url, headers=self.headers)
         if response.status_code != 200:
             raise EquiwattAPIException.from_response(response)
@@ -340,7 +340,7 @@ class EquiwattSaaSClient:
         print(data)
         return PowerResponsePaginatedResponse[EventAssetDetails](EventAssetDetails, **data)
 
-    def get_event_assets(self, event_uuid: str, chunk_size: int = 100) -> Iterator[List[EventAssetDetails]]:
+    def get_event_assets_with_baselines(self, event_uuid: str, chunk_size: int = 100) -> Iterator[List[EventAssetDetails]]:
         """
         This is a generator function that yields a list of assets registered in the powerResponse platform.
 
