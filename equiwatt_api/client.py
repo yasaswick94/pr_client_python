@@ -3,7 +3,7 @@ import hmac
 import hashlib
 import requests
 from typing import Iterator, List
-from equiwatt_api.response import AssetDetails, EventAssetBaseline, EventAssetState, EventDetails, EventAssetStat
+from equiwatt_api.response import AssetDetails, EventAssetBaseline, EventAssetDetails, EventAssetState, EventDetails, EventAssetStat
 from equiwatt_api.schema.paginator import PowerResponsePaginatedResponse
 from .schema.asset import (
     AssetCreatePayload,
@@ -318,6 +318,36 @@ class EquiwattSaaSClient:
         page = 1
         while True:
             paginated_response = self._get_paginated_event_asset_baselines(
+                event_uuid=event_uuid, page=page, items_per_page=chunk_size
+            )
+            yield paginated_response.items
+            if paginated_response.pagination.currentPage >= paginated_response.pagination.totalPages:
+                break
+            page += 1
+
+    def _get_paginated_event_assets_with_baselines(
+        self, event_uuid: str, page: int = 1, items_per_page: int = 100
+    ) -> PowerResponsePaginatedResponse[EventAssetDetails]:
+        """
+        Get event asset baselines
+        """
+        url = f"{self.base_url}/api/events/{event_uuid}/assets?page={page}&pageSize={items_per_page}"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+        data = response.json()
+        return PowerResponsePaginatedResponse[EventAssetDetails](EventAssetDetails, **data)
+
+    def get_event_assets_with_baselines(self, event_uuid: str, chunk_size: int = 100) -> Iterator[List[EventAssetDetails]]:
+        """
+        This is a generator function that yields a list of assets registered in the powerResponse platform.
+
+        Args:
+            chunk_size (int, optional): The number of items per chunk. Defaults to 100.
+        """
+        page = 1
+        while True:
+            paginated_response = self._get_paginated_event_assets_with_baselines(
                 event_uuid=event_uuid, page=page, items_per_page=chunk_size
             )
             yield paginated_response.items
