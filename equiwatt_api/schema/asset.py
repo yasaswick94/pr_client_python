@@ -42,6 +42,7 @@ class EnergyConsumptionDataPoint(BaseModel):
     assetUUID: str
     timestamp: int
     value: float
+    type: Literal["import", "export"]
 
     class Config:
         extra = "forbid"

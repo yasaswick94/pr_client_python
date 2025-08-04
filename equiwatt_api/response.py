@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 
 class EventDetails():
@@ -70,6 +70,26 @@ class AssetDetails():
         self.installationDate = data.get('installationDate')
         self.createdAt = data.get('createdAt')
         self.updatedAt = data.get('updatedAt')
+
+
+class EventAssetBaselineDetails():
+    value: str
+    method: str
+    type: str
+
+    def __init__(self, data: Dict):
+        self.value = data.get("value")
+        self.method = data.get("method")
+        self.type = data.get("type")
+
+
+class EventAssetDetails():
+    asset: EventAsset
+    baselines: List[EventAssetBaselineDetails]
+
+    def __init__(self, data: Dict):
+        self.asset = EventAsset(data.get('asset'))
+        self.baselines = [EventAssetBaselineDetails(baseline) for baseline in data.get("baselines", [])]
 
 
 class EventAssetBaseline():
