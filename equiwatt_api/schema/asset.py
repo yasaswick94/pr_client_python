@@ -14,6 +14,10 @@ class AssetCreatePayload(BaseModel):
     locationAddress: str
     locationLatitude: Optional[str] = None
     locationLongitude: Optional[str] = None
+    exportMpan: Optional[str] = None
+    hhSettled: Optional[bool] = False
+    bmuId: Optional[str] = None
+    eventSchemeOptedInDateTime: Optional[str] = None
 
     class Config:
         extra = "forbid"
