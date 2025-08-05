@@ -109,6 +109,8 @@ class EventAssetStat():
     energyForecasted: float
     energyConsumed: float
     energySaved: float
+    energyExportForecasted: float
+    energyExportDelivered: float
 
     def __init__(self, data: Dict):
         self.asset = EventAssetOnlyUUID(data.get('asset'))
@@ -116,3 +118,5 @@ class EventAssetStat():
         self.energyForecasted = data.get('energyForecasted')
         self.energyConsumed = data.get('energyConsumed')
         self.energySaved = data.get('energySaved')
+        self.energyExportForecasted = data.get('energyExportForecasted')
+        self.energyExportDelivered = data.get('energyExportDelivered')
