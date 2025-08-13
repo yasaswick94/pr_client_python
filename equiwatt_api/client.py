@@ -2,7 +2,7 @@ import uuid
 import hmac
 import hashlib
 import requests
-from typing import Iterator, List
+from typing import Iterator, List, Optional
 from equiwatt_api.response import AssetDetails, EventAssetBaseline, EventAssetDetails, EventAssetState, EventDetails, EventAssetStat
 from equiwatt_api.schema.paginator import PowerResponsePaginatedResponse
 from .schema.asset import (
@@ -49,8 +49,12 @@ class EquiwattSaaSClient:
         locationAddress: str,
         locationLatitude: str,
         locationLongitude: str,
-        installationDate: datetime = None,
-        eventSchemeUUID: uuid.uuid4 = None,
+        installationDate: Optional[datetime] = None,
+        eventSchemeUUID: Optional[uuid.UUID] = None,
+        exportMpan: Optional[str] = None,
+        hhSettled: Optional[bool] = None,
+        bmuId: Optional[str] = None,
+        eventSchemeOptedInDateTime: Optional[datetime] = None,
     ):
         """
         Create an asset in the Equiwatt SaaS platform, all fields are required
@@ -86,12 +90,16 @@ class EquiwattSaaSClient:
                 locationAddress=locationAddress,
                 locationLatitude=locationLatitude,
                 locationLongitude=locationLongitude,
+                exportMpan=exportMpan,
+                hhSettled=hhSettled,
+                bmuId=bmuId,
+                eventSchemeOptedInDateTime=eventSchemeOptedInDateTime
             )
         except ValidationError as e:
             raise EquiwattAPIException(f"Invalid payload data: {e.json()}")
 
         url = f"{self.base_url}/api/v1/assets"
-        response = requests.post(url, json=payload.model_dump(), headers=self.headers)
+        response = requests.post(url, json=payload.model_dump(exclude_none=True), headers=self.headers)
         if response.status_code != 201:
             raise EquiwattAPIException.from_response(response)
         return response.json()
