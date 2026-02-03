@@ -120,3 +120,30 @@ class EventAssetStat():
         self.energySaved = data.get('energySaved')
         self.energyExportForecasted = data.get('energyExportForecasted')
         self.energyExportDelivered = data.get('energyExportDelivered')
+
+    
+class EventStats():
+    energySaved: float
+    participatedAssetCount: int
+    incentive: float
+    earnings: float
+    optInCount: int
+    optOutCount: int
+    state: str
+    processedStatsAssetsCount: int
+    pendingStatsAssetsCount: int
+    expiredStatsAssetsCount: int
+    highUsageCount: int
+
+    def __init__(self, data: Dict):
+        self.energySaved = data.get('energySaved')
+        self.participatedAssetCount = data.get('participatedAssetCount')
+        self.incentive = data.get('incentive')
+        self.earnings = data.get('earnings')
+        self.optInCount = data.get('optInCount')
+        self.optOutCount = data.get('optOutCount')
+        self.state = data.get('state')
+        self.processedStatsAssetsCount = data.get('processedStatsAssetsCount')
+        self.pendingStatsAssetsCount = data.get('pendingStatsAssetsCount')
+        self.expiredStatsAssetsCount = data.get('expiredStatsAssetsCount')
+        self.highUsageCount = data.get('highUsageCount')

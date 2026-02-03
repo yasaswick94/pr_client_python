@@ -3,7 +3,7 @@ import hmac
 import hashlib
 import requests
 from typing import Iterator, List, Optional
-from equiwatt_api.response import AssetDetails, EventAssetBaseline, EventAssetDetails, EventAssetState, EventDetails, EventAssetStat
+from equiwatt_api.response import AssetDetails, EventAssetBaseline, EventAssetDetails, EventAssetState, EventDetails, EventAssetStat, EventStats
 from equiwatt_api.schema.paginator import PowerResponsePaginatedResponse
 from .schema.asset import (
     AssetCreatePayload,
@@ -612,3 +612,14 @@ class EquiwattSaaSClient:
             if paginated_response.pagination.currentPage >= paginated_response.pagination.totalPages:
                 break
             page += 1
+
+
+    def get_event_stats(self, event_uuid: str) -> EventStats:
+        """
+        Get event stats
+        """
+        url = f"{self.base_url}/api/v1/events/{event_uuid}/stats"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            raise EquiwattAPIException.from_response(response)
+        return EventStats(response.json())
