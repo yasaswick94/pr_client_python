@@ -123,7 +123,7 @@ class EventAssetStat():
 
     
 class EventStats():
-    energySaved: float
+    energySaved: str
     participatedAssetCount: int
     incentive: float
     earnings: float
@@ -133,7 +133,7 @@ class EventStats():
     processedStatsAssetsCount: int
     pendingStatsAssetsCount: int
     expiredStatsAssetsCount: int
-    highUsageCount: int
+    highUsageCount: str
 
     def __init__(self, data: Dict):
         self.energySaved = data.get('energySaved')
