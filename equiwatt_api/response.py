@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 
 class EventDetails():
@@ -111,6 +111,7 @@ class EventAssetStat():
     energySaved: float
     energyExportForecasted: float
     energyExportDelivered: float
+    energyForecastedStatic: Optional[float]
 
     def __init__(self, data: Dict):
         self.asset = EventAssetOnlyUUID(data.get('asset'))
@@ -120,6 +121,7 @@ class EventAssetStat():
         self.energySaved = data.get('energySaved')
         self.energyExportForecasted = data.get('energyExportForecasted')
         self.energyExportDelivered = data.get('energyExportDelivered')
+        self.energyForecastedStatic = data.get('energyForecastedStatic')
 
     
 class EventStats():
